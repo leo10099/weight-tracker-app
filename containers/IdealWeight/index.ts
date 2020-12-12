@@ -1,1 +1,1 @@
-export { default } from "./IdealWeight";
+export { default } from './IdealWeight';
