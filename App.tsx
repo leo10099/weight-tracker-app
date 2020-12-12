@@ -9,19 +9,19 @@ import IdealWeight from "./containers/IdealWeight";
 import { colors } from "./utils/theme";
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <IdealWeight />
-      <StatusBar style="auto" />
-    </View>
-  );
+	return (
+		<View style={styles.container}>
+			<IdealWeight />
+			<StatusBar style="auto" />
+		</View>
+	);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.yellow,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+	container: {
+		flex: 1,
+		backgroundColor: colors.yellow,
+		alignItems: "center",
+		justifyContent: "center",
+	},
 });
