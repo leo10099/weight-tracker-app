@@ -1,118 +1,170 @@
-import React, { useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import React, { useState, useMemo } from "react";
+import { TouchableOpacity, Text, View, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
 // Utils
 import { colors } from "../../utils/theme";
+import { getIdealWeight } from "../../utils/calcs";
+
+// Types
+import { Gender } from "../../@types/gender";
 
 const IdealWeight = () => {
 	// Local State
-	const [selectedGender, setSelectedGender] = useState("H");
+	const [selectedGender, setSelectedGender] = useState<"M" | "H">("H");
 	const [selectedHeight, setSelectedHeight] = useState(150);
-	const [selectedAge, setSelectedAge] = useState(18);
 	const [selectedWeight, setSelectedWeight] = useState(50);
+	const [idealWeight, setIdealWeight] = useState(0);
 
 	// Handlers
-	const onGenderSelected = (value: string | number) => setSelectedGender(value.toString());
-
+	const onGenderSelected = (value: Gender) => setSelectedGender(value);
 	const onHeightSelected = (value: string | number) => setSelectedHeight(Number(value));
+	const onWeightSelected = (value: string | number) => setSelectedWeight(Number(value));
 
-	const onAgeSelected = (value: string | number) => setSelectedAge(Number(value));
+	const onCtaPressed = () => {
+		const calculatedIdealWeight = getIdealWeight(selectedGender, selectedHeight);
+		setIdealWeight(Number(calculatedIdealWeight));
+	};
+
+	// Memos
+	const weightDifferential = useMemo(() => {
+		if (!idealWeight)
+			return {
+				diffentialWeightLabel: "",
+				isInIdealWeight: false,
+				value: 0,
+			};
+
+		const differential = Math.round(selectedWeight - idealWeight);
+
+		console.log(differential);
+
+		return {
+			diffentialWeightLabel: differential > 0 ? "encima" : "debajo",
+			isInIdealWeight: differential === 0,
+			value: differential,
+		};
+	}, [idealWeight, selectedWeight]);
 
 	return (
 		<View style={styles.container}>
 			<Text style={styles.title}>Peso Ideal</Text>
-			<Text style={styles.subTitle}>Calcula tu peso ideal</Text>
-			<View style={styles.formContainer}>
-				{/* Sexo */}
-				<Picker
-					style={styles.picker}
-					selectedValue={selectedGender}
-					onValueChange={onGenderSelected}
-					prompt="Selecciona tu sexo"
-					dropdownIconColor={colors.pink}
-				>
-					<Picker.Item label="Hombre" value="H" />
-					<Picker.Item label="Mujer" value="M" />
-				</Picker>
-				{/* Altura */}
-				<Picker
-					style={styles.picker}
-					selectedValue={selectedHeight}
-					onValueChange={onHeightSelected}
-					prompt="Selecciona tu altura"
-					dropdownIconColor={colors.pink}
-				>
-					{Array.from({ length: 51 }).map((_, idx) => {
-						const label = (idx + 150).toString() + " cm";
-						const value = idx + 150;
+			{!idealWeight && <Text style={styles.subTitle}>Calcula tu peso ideal</Text>}
+			{idealWeight ? (
+				<View style={styles.resultContainer}>
+					<Text style={styles.resultText}>Tu peso ideal es {idealWeight} kg</Text>
+					{weightDifferential.isInIdealWeight ? (
+						<Text style={styles.resultText}>¡FELICITACIONES! ¡ESTÁS EN TU PESO IDEAL!</Text>
+					) : (
+						<Text style={styles.resultText}>
+							Estas {Math.abs(weightDifferential.value)} kgs por{" "}
+							{weightDifferential.diffentialWeightLabel} de tu peso ideal
+						</Text>
+					)}
+				</View>
+			) : (
+				<View style={styles.formContainer}>
+					{/* Sexo */}
+					<Picker
+						style={styles.picker}
+						selectedValue={selectedGender}
+						onValueChange={value => onGenderSelected(value as Gender)}
+						prompt="Selecciona tu sexo"
+						dropdownIconColor={colors.pink}
+					>
+						<Picker.Item label="Hombre" value="H" />
+						<Picker.Item label="Mujer" value="M" />
+					</Picker>
+					{/* Altura */}
+					<Picker
+						style={styles.picker}
+						selectedValue={selectedHeight}
+						onValueChange={onHeightSelected}
+						prompt="Selecciona tu altura"
+						dropdownIconColor={colors.pink}
+					>
+						{Array.from({ length: 51 }).map((_, idx) => {
+							const label = (idx + 150).toString() + " cm";
+							const value = idx + 150;
 
-						return <Picker.Item label={label} value={value} key={value} />;
-					})}
-				</Picker>
-				{/* Edad */}
-				<Picker
-					style={styles.picker}
-					selectedValue={selectedAge}
-					onValueChange={onAgeSelected}
-					prompt="Selecciona tu edad"
-					dropdownIconColor={colors.pink}
-				>
-					{Array.from({ length: 51 }).map((_, idx) => {
-						const label = (idx + 50).toString() + " años";
-						const value = idx + 50;
+							return <Picker.Item label={label} value={value} key={value} />;
+						})}
+					</Picker>
+					{/* Peso */}
+					<Picker
+						style={styles.picker}
+						selectedValue={selectedWeight}
+						onValueChange={onWeightSelected}
+						prompt="Selecciona tu peso"
+						dropdownIconColor={colors.pink}
+					>
+						{Array.from({ length: 150 }).map((_, idx) => {
+							const label = (idx + 50).toString() + " kg";
+							const value = idx + 50;
 
-						return <Picker.Item label={label} value={value} key={value} />;
-					})}
-				</Picker>
-				{/* Peso */}
-				<Picker
-					style={styles.picker}
-					selectedValue={selectedAge}
-					onValueChange={onAgeSelected}
-					prompt="Selecciona tu peso"
-					dropdownIconColor={colors.pink}
-				>
-					{Array.from({ length: 150 }).map((_, idx) => {
-						const label = (idx + 50).toString() + " kg";
-						const value = idx + 50;
+							return <Picker.Item label={label} value={value} key={value} />;
+						})}
+					</Picker>
+				</View>
+			)}
 
-						return <Picker.Item label={label} value={value} key={value} />;
-					})}
-				</Picker>
-			</View>
+			{!idealWeight && (
+				<TouchableOpacity style={styles.cta} onPress={onCtaPressed}>
+					<Text style={styles.ctaText}>CALCULAR</Text>
+				</TouchableOpacity>
+			)}
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
 		alignItems: "center",
+		flex: 1,
 		justifyContent: "center",
 		margin: "auto",
 	},
 	title: {
-		fontSize: 32,
 		color: colors.dark,
-		letterSpacing: 1.2,
+		fontSize: 32,
 		fontWeight: "700",
+		letterSpacing: 1.2,
 		textTransform: "uppercase",
 	},
 	subTitle: {
-		fontWeight: "500",
-		fontSize: 20,
-		marginTop: 20,
 		color: colors.grey,
+		fontSize: 20,
+		fontWeight: "500",
+		marginTop: 20,
 	},
 	formContainer: {
 		marginTop: 40,
 	},
 	picker: {
-		marginTop: 18,
-		height: 50,
-		width: 160,
 		fontSize: 100,
+		height: 50,
+		marginTop: 18,
+		width: 160,
+	},
+	cta: {
+		backgroundColor: colors.red,
+		borderRadius: 5,
+		marginTop: 40,
+		minWidth: 160,
+		padding: 16,
+		textAlign: "center",
+	},
+	ctaText: {
+		color: colors.yellow,
+		alignSelf: "center",
+		fontWeight: "700",
+		fontSize: 20,
+	},
+	resultContainer: {
+		marginTop: 40,
+	},
+	resultText: {
+		marginTop: 20,
 	},
 });
 
