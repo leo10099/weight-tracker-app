@@ -6,6 +6,9 @@ import { Picker } from "@react-native-picker/picker";
 import { colors } from "../../utils/theme";
 import { getIdealWeight } from "../../utils/calcs";
 
+// Illustrations
+import Illustration from "../../assets/man-over.svg";
+
 // Types
 import { Gender } from "../../@types/gender";
 
@@ -22,8 +25,12 @@ const IdealWeight = () => {
 	const onWeightSelected = (value: string | number) => setSelectedWeight(Number(value));
 
 	const onCtaPressed = () => {
-		const calculatedIdealWeight = getIdealWeight(selectedGender, selectedHeight);
-		setIdealWeight(Number(calculatedIdealWeight));
+		if (!idealWeight) {
+			const calculatedIdealWeight = getIdealWeight(selectedGender, selectedHeight);
+			setIdealWeight(Number(calculatedIdealWeight));
+			return;
+		}
+		setIdealWeight(0);
 	};
 
 	// Memos
@@ -36,8 +43,6 @@ const IdealWeight = () => {
 			};
 
 		const differential = Math.round(selectedWeight - idealWeight);
-
-		console.log(differential);
 
 		return {
 			diffentialWeightLabel: differential > 0 ? "encima" : "debajo",
@@ -52,12 +57,13 @@ const IdealWeight = () => {
 			{!idealWeight && <Text style={styles.subTitle}>Calcula tu peso ideal</Text>}
 			{idealWeight ? (
 				<View style={styles.resultContainer}>
-					<Text style={styles.resultText}>Tu peso ideal es {idealWeight} kg</Text>
+					<Illustration width={200} height={300}></Illustration>
+					<Text style={styles.resultText}>Tu peso ideal es {idealWeight.toString()} kg</Text>
 					{weightDifferential.isInIdealWeight ? (
 						<Text style={styles.resultText}>¡FELICITACIONES! ¡ESTÁS EN TU PESO IDEAL!</Text>
 					) : (
 						<Text style={styles.resultText}>
-							Estas {Math.abs(weightDifferential.value)} kgs por{" "}
+							Estas {Math.abs(weightDifferential.value).toString()} kgs por{" "}
 							{weightDifferential.diffentialWeightLabel} de tu peso ideal
 						</Text>
 					)}
@@ -108,7 +114,11 @@ const IdealWeight = () => {
 				</View>
 			)}
 
-			{!idealWeight && (
+			{idealWeight ? (
+				<TouchableOpacity style={styles.cta} onPress={onCtaPressed}>
+					<Text style={styles.ctaText}>VOLVER</Text>
+				</TouchableOpacity>
+			) : (
 				<TouchableOpacity style={styles.cta} onPress={onCtaPressed}>
 					<Text style={styles.ctaText}>CALCULAR</Text>
 				</TouchableOpacity>
@@ -161,6 +171,9 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 	},
 	resultContainer: {
+		alignItems: "center",
+		display: "flex",
+		justifyContent: "center",
 		marginTop: 40,
 	},
 	resultText: {
