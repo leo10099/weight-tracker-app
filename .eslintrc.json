@@ -1,0 +1,21 @@
+{
+  "extends": "airbnb",
+  "plugins": [
+    "react",
+    "react-native",
+    "react-hooks"
+  ],
+  "parser": "babel-eslint",
+  "env": {
+    "jest": true,
+    "react-native/react-native": true
+  },
+  "rules": {
+    "react/prop-types": "off",
+    "padded-blocks": "off",
+    "react-hooks/exhaustive-deps": "warn"
+  },
+  "globals": {
+    "fetch": false
+  }
+}
